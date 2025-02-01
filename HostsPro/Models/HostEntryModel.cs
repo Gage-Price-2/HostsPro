@@ -6,6 +6,6 @@ namespace HostsPro.Models
     {
         public IPEntryModel? IpEntry {  get; set; }
         public string? CommentBlock { get; set; }
-        public bool IsCommentBlock => IpEntry == null;
+        public bool IsCommentBlock { get; set; }
     }
 }

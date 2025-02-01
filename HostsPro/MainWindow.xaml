@@ -32,9 +32,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <CheckBox Grid.Column="0" IsChecked="{Binding IPEntryModel.IsActive}" />
-                                <TextBox Grid.Column="1" Text="{Binding IPEntryModel.IPAddress}" />
-                                <TextBox Grid.Column="2" Text="{Binding IPEntryModel.DNS, UpdateSourceTrigger=PropertyChanged}" 
+                                <CheckBox Grid.Column="0" IsChecked="{Binding IpEntry.IsActive}" />
+                                <TextBox Grid.Column="1" Text="{Binding IpEntry.IpAddress}" />
+                                <TextBox Grid.Column="2" Text="{Binding IpEntry.DNS, UpdateSourceTrigger=PropertyChanged}" 
                                          LostFocus="DNS_LostFocus" />
                                 <Button Grid.Column="3" Content="Delete" 
                                         Command="{Binding DataContext.DeleteEntryCommand, RelativeSource={RelativeSource AncestorType=Window}}"

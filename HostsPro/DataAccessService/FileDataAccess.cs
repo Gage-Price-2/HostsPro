@@ -61,39 +61,49 @@ namespace HostsPro.DataAccessService
 
                 foreach (var line in lines)
                 {
-                    if (line.StartsWith("##"))
-                    {
-                        // Handle comment block
-                        isCommentBlock = true;
-                        currentCommentBlock += line.TrimStart('#') + Environment.NewLine;
-                        
-                    }
-                    else if (line.StartsWith("###"))
+                     if (line.StartsWith("###"))
                     {
                         // End of comment block
                         if (isCommentBlock)
                         {
-                            entries.Add(new HostEntryModel { CommentBlock = currentCommentBlock.Trim() });
+                            entries.Add(new HostEntryModel { CommentBlock = currentCommentBlock, IsCommentBlock = true });
                             currentCommentBlock = string.Empty;
                             isCommentBlock = false;
                         }
+                        //Start of block comment
+                        else
+                        {
+                            //Set variables
+                            currentCommentBlock = string.Empty;
+                            isCommentBlock = true;
+                            string trimmedLine = line.TrimStart('#') + Environment.NewLine;
+                            currentCommentBlock = trimmedLine;
+
+                        }
+                    }
+                    else if (line.StartsWith("##"))
+                    {
+                        // Handle comment block contents
+                        //IsCommentBlock should be true here
+                        currentCommentBlock += line.TrimStart('#') + Environment.NewLine;
+                        
                     }
                     else if (line.StartsWith("#"))
                     {
                         // Handle inactive IP entry
-                        var ipEntry = ParseIPEntry(line.Substring(1).Trim(), isActive: false);
+                        var ipEntry = ParseIPEntry(line.TrimStart('#'), false);
                         if (ipEntry != null)
                         {
-                            entries.Add(new HostEntryModel { IpEntry = ipEntry });
+                            entries.Add(new HostEntryModel { IpEntry = ipEntry, IsCommentBlock = false });
                         }
                     }
                     else if (!string.IsNullOrWhiteSpace(line))
                     {
                         // Handle active IP entry
-                        var ipEntry = ParseIPEntry(line, isActive: true);
+                        var ipEntry = ParseIPEntry(line, true);
                         if (ipEntry != null)
                         {
-                            entries.Add(new HostEntryModel { IpEntry = ipEntry });
+                            entries.Add(new HostEntryModel { IpEntry = ipEntry, IsCommentBlock = false });
                         }
                     }
                 }

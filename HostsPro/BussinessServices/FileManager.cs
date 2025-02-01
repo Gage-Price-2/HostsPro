@@ -18,8 +18,9 @@ namespace HostsPro.BussinessServices
         public List<HostEntryModel> ReadFile()
         {
             List<HostEntryModel> list = new List<HostEntryModel>();
-            return fileDataAccess.GetFile();
-
+            list = fileDataAccess.GetFile();
+            return list;
+            
 
         }
 
