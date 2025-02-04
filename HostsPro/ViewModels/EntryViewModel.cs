@@ -1,4 +1,5 @@
-﻿using HostsPro.BussinessServices;
+﻿//using CommunityToolkit.Mvvm.Input;
+using HostsPro.BussinessServices;
 using HostsPro.Commands;
 using HostsPro.Models;
 using System;
@@ -18,6 +19,7 @@ namespace HostsPro.ViewModels
         public ObservableCollection<HostEntryModel> Entries { get; set; }
         public ICommand SaveCommand { get; set; }
         public ICommand DeleteEntryCommand { get; set; }
+        public ICommand AddEntryCommand { get; set; }
 
         private readonly FileManager _hostsFileService;
         private readonly IpLookupManager _dnsLookupService;
@@ -28,8 +30,13 @@ namespace HostsPro.ViewModels
             _dnsLookupService = new IpLookupManager();
             Entries = new ObservableCollection<HostEntryModel>(_hostsFileService.ReadFile());
 
+            //SaveCommand = new RelayCommand(SaveEntries);
+            //DeleteEntryCommand = new RelayCommand(obj => DeleteEntry(obj as HostEntryModel));
+            //AddEntryCommand = new RelayCommand(obj => AddEntry(obj as string)); 
+            AddEntryCommand = new RelayCommand(obj => AddEntry(obj as string));
             SaveCommand = new RelayCommand(SaveEntries);
             DeleteEntryCommand = new RelayCommand(obj => DeleteEntry(obj as HostEntryModel));
+
 
         }
 
@@ -48,6 +55,25 @@ namespace HostsPro.ViewModels
         private void DeleteEntry(HostEntryModel entry)
         {
             Entries.Remove(entry);
+        }
+        private void AddEntry(string entryType)
+        {
+            if (entryType == "IP")
+            {
+                Entries.Add(new HostEntryModel
+                {
+                    IpEntry = new IPEntryModel(),
+                    IsCommentBlock = false
+                });
+            }
+            else if (entryType == "Comment")
+            {
+                Entries.Add(new HostEntryModel
+                {
+                    CommentBlock = string.Empty,
+                    IsCommentBlock = true
+                });
+            }
         }
 
         public async void LookupIPAddress(HostEntryModel entry)

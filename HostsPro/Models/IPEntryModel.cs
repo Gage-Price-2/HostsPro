@@ -9,11 +9,11 @@ namespace HostsPro.Models
 {
     public class IPEntryModel
     {
-        public string? IpAddress { get; set; }
-        public string? DNS { get; set; }
+        public string IpAddress { get; set; } = string.Empty;
+        public string DNS { get; set; } = string.Empty;
 
-        public string? RoutesTo { get; set; }
-        public bool? IsActive { get; set; }
-        public string? Comment { get; set; }
+        public string RoutesTo { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = false;
+        public string Comment { get; set; } = string.Empty;
     }
 }
