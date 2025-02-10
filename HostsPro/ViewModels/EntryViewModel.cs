@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace HostsPro.ViewModels
@@ -20,19 +21,25 @@ namespace HostsPro.ViewModels
         public ICommand SaveCommand { get; set; }
         public ICommand DeleteEntryCommand { get; set; }
         public ICommand AddEntryCommand { get; set; }
+        //private bool _isValidationActive = false;
 
         private readonly FileManager _hostsFileService;
         private readonly IpLookupManager _dnsLookupService;
+        //public bool IsValidationActive
+        //{
+        //    get => _isValidationActive;
+        //    set
+        //    {
+        //        _isValidationActive = value;
+        //        OnPropertyChanged(nameof(IsValidationActive));
+        //    }
+        //}
 
         public EntryViewModel()
         {
             _hostsFileService = new FileManager();
             _dnsLookupService = new IpLookupManager();
             Entries = new ObservableCollection<HostEntryModel>(_hostsFileService.ReadFile());
-
-            //SaveCommand = new RelayCommand(SaveEntries);
-            //DeleteEntryCommand = new RelayCommand(obj => DeleteEntry(obj as HostEntryModel));
-            //AddEntryCommand = new RelayCommand(obj => AddEntry(obj as string)); 
             AddEntryCommand = new RelayCommand(obj => AddEntry(obj as string));
             SaveCommand = new RelayCommand(SaveEntries);
             DeleteEntryCommand = new RelayCommand(obj => DeleteEntry(obj as HostEntryModel));
@@ -49,7 +56,24 @@ namespace HostsPro.ViewModels
 
         private void SaveEntries()
         {
-            _hostsFileService.SaveEntries(Entries);
+            bool isValid = true;
+            foreach (var entry in Entries)
+            {
+                entry.Validate();
+                if (entry.HasErrors)
+                {
+                    isValid = false;
+                }
+            }
+
+            if (isValid)
+            {
+                _hostsFileService.SaveEntries(Entries);
+            }
+            else
+            {
+
+            }
         }
 
         private void DeleteEntry(HostEntryModel entry)
@@ -76,20 +100,29 @@ namespace HostsPro.ViewModels
             }
         }
 
-        public async void LookupIPAddress(HostEntryModel entry)
+        public async void RoutesTo_LostFocus(HostEntryModel model)
         {
-            if (entry.IpEntry != null && !string.IsNullOrEmpty(entry.IpEntry.DNS))
+            if (model != null)
             {
-                string ipAddress = await _dnsLookupService.GetIPAddressAsync(entry.IpEntry.DNS);
-                if (!string.IsNullOrEmpty(ipAddress))
+                await LookupIpAddressAsync(model);
+            }
+        }
+        public async Task LookupIpAddressAsync(HostEntryModel entry)
+        {
+            if (entry.IpEntry != null && !string.IsNullOrEmpty(entry.IpEntry.RoutesTo))
+            {
+                
+                string resolvedIp = await _dnsLookupService.ResolveDnsWithTimeoutAsync(entry.IpEntry.RoutesTo, TimeSpan.FromSeconds(20));
+                if (!string.IsNullOrEmpty(resolvedIp))
                 {
-                   // entry.IpEntry.IpAddress = ipAddress;
+                   entry.IpEntry.IpAddress = resolvedIp;
                 }
                 else
                 {
                     entry.IpEntry.IpAddress = "Error: No IP found";
                 }
-                OnPropertyChanged(nameof(Entries));
+                //OnPropertyChanged(nameof(Entries));
+                OnPropertyChanged(nameof(entry.IpEntry.IpAddress));
             }
         }
     }

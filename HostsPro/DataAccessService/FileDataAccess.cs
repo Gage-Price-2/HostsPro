@@ -13,7 +13,7 @@ namespace HostsPro.DataAccessService
     public class FileDataAccess
     {
         //private string pathToHosts = "C:\\Users\\Gage\\OneDrive - Grand Canyon University\\SeniorYear\\Example-Hosts-file-format.txt";
-        private string pathToHosts = "C:\\Users\\Price\\OneDrive - Grand Canyon University\\SeniorYear\\Example-Hosts-file-format.txt";
+        //private string pathToHosts = "C:\\Users\\Price\\OneDrive - Grand Canyon University\\SeniorYear\\Example-Hosts-file-format.txt";
         //private string testFile = "C:\\Users\\Gage\\OneDrive - Grand Canyon University\\SeniorYear\\TestFile.txt";
         private string testFile = "C:\\Users\\Price\\HostsPro\\TempFile.txt";
         private List<string> fileLines;
@@ -30,7 +30,7 @@ namespace HostsPro.DataAccessService
             try
             {
                 // Open the text file using a stream reader.
-                using (StreamReader reader = new StreamReader(pathToHosts))
+                using (StreamReader reader = new StreamReader(testFile))
                 {
                     while (!reader.EndOfStream)
                     {
@@ -61,7 +61,7 @@ namespace HostsPro.DataAccessService
             List<HostEntryModel> entries = new List<HostEntryModel>();
             try
             {
-                var lines = File.ReadAllLines(pathToHosts);
+                var lines = File.ReadAllLines(testFile);
                 bool isCommentBlock = false;
                 string currentCommentBlock = string.Empty;
 
@@ -150,14 +150,27 @@ namespace HostsPro.DataAccessService
             // Split the remaining part by spaces
             var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            // Check if we have at least IP Address, DNS, and RoutesTo
-            if (parts.Length < 3)
+            // Check if we have at least IP Address, DNS,
+            if (parts.Length < 2)
                 return null;
 
             string ipAddress = parts[0];
             string dns = parts[1];
-            string routesTo = parts[2];
-
+            string routesTo = string.Empty;
+            if (!string.IsNullOrEmpty(comment))
+            {
+                var commentParts = comment.Split('+', StringSplitOptions.RemoveEmptyEntries);
+                if (commentParts.Length == 2)
+                {
+                    routesTo = commentParts[0].Trim();
+                    comment = commentParts[1].Trim();
+                }
+                else
+                {
+                    routesTo = comment.Trim();
+                    comment = null;
+                }
+            }
             return new IPEntryModel
             {
                 IpAddress = ipAddress,
@@ -192,44 +205,45 @@ namespace HostsPro.DataAccessService
 
         private static void WriteCommentBlock(StreamWriter writer, string commentBlock)
         {
-            writer.WriteLine();
-            writer.WriteLine("###");
+            
             var lines = commentBlock.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            foreach (var line in lines)
+            if(commentBlock != string.Empty)
             {
-                if (!string.IsNullOrWhiteSpace(line))
+                writer.WriteLine();
+                writer.WriteLine("###");
+                foreach (var line in lines)
                 {
-                    foreach (var wrappedLine in WrapText(line.Trim(), 80)) // Wrap long lines at 80 characters
+                    if (!string.IsNullOrWhiteSpace(line))
                     {
-                        writer.WriteLine("## " + wrappedLine);
+                        foreach (var wrappedLine in WrapText(line.Trim(), 80)) // Wrap long lines at 80 characters
+                        {
+                            writer.WriteLine("## " + wrappedLine);
+                        }
                     }
                 }
+
+                writer.WriteLine("###");
             }
-
-            writer.WriteLine("###");
+            
         }
-
 
         private static void WriteHostEntry(StreamWriter writer, IPEntryModel hostEntry)
         {
             writer.WriteLine();
             string entryPrefix = hostEntry.IsActive ? "" : "# ";
-            string baseEntry = $"{entryPrefix}{hostEntry.IpAddress} {hostEntry.DNS} {hostEntry.RoutesTo}";
+            string baseEntry = $"{entryPrefix}{hostEntry.IpAddress} {hostEntry.DNS}";
 
+            // RoutesTo is always required
+            string commentSection = $"# {hostEntry.RoutesTo}";
+
+            // Append comment if it exists
             if (!string.IsNullOrWhiteSpace(hostEntry.Comment))
             {
-                var wrappedCommentLines = WrapText(hostEntry.Comment, Math.Max(10, MaxLineLength - baseEntry.Length - 2)); // Ensure positive length
-                writer.WriteLine($"{baseEntry} # {wrappedCommentLines.First()}");
+                commentSection += $" + {hostEntry.Comment}";
+            }
 
-                foreach (var extraLine in wrappedCommentLines.Skip(1))
-                {
-                    writer.WriteLine($"# {extraLine}");
-                }
-            }
-            else
-            {
-                writer.WriteLine(baseEntry);
-            }
+            // Write the formatted entry
+            writer.WriteLine($"{baseEntry} {commentSection}");
         }
 
         private static List<string> WrapText(string text, int maxLength)
