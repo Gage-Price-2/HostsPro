@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HostsPro
+namespace HostsPro.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -21,18 +21,19 @@ namespace HostsPro
         public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = new EntryViewModel();
 
         }
-            private void DNS_LostFocus(object sender, RoutedEventArgs e)
+            private void RoutesTo_LostFocus(object sender, RoutedEventArgs e)
             {
-                if (DataContext is EntryViewModel vm && sender is TextBox textBox)
+            if (DataContext is EntryViewModel vm && sender is TextBox textBox)
+            {
+                var entry = textBox.DataContext as HostEntryModel;
+                if (entry != null)
                 {
-                    var entry = textBox.DataContext as HostEntryModel;
-                    if (entry != null)
-                    {
-                        vm.LookupIPAddress(entry);
-                    }
+                    vm.RoutesTo_LostFocus(entry);
                 }
+            }
             }
     }
 }

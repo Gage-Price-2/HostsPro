@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostsPro1", "HostsPro\HostsPro1.csproj", "{4C0CB4D2-2B78-47DE-B0A6-28C2B6859004}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostsPro", "HostsPro\HostsPro.csproj", "{4C0CB4D2-2B78-47DE-B0A6-28C2B6859004}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
