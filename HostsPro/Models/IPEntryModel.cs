@@ -4,18 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HostsPro.Models
 {
-    //public class IPEntryModel
-    //{
-
-    //    public string IpAddress { get; set; } //= string.Empty;
-
-    //    public string DNS { get; set; } //= string.Empty;
-
-    //    public string RoutesTo { get; set; } //= string.Empty;
-    //    public bool IsActive { get; set; } //= false;
-    //    public string Comment { get; set; } //= string.Empty;
-    //    
-    //}
+    
     public class IPEntryModel : INotifyDataErrorInfo, INotifyPropertyChanged
     {
         private readonly Dictionary<string, List<string>> _errors = new();
@@ -37,8 +26,9 @@ namespace HostsPro.Models
         //public string IpAddress { get; set; }
         public string DNS { get; set; }
         public string RoutesTo { get; set; }
-        public bool IsActive { get; set; } //= false;
-        public string Comment { get; set; } //= string.Empty;
+        public bool IsActive { get; set; }
+        [MaxLength(60)]
+        public string Comment { get; set; } 
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -83,8 +73,18 @@ namespace HostsPro.Models
             // Repeat for other fields...
         }
 
+        //public IEnumerable GetErrors(string? propertyName)
+        //{
+        //    return _errors.ContainsKey(propertyName) ? _errors[propertyName] : Enumerable.Empty<string>();
+        //}
         public IEnumerable GetErrors(string? propertyName)
         {
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                // Return all errors
+                return _errors.Values.SelectMany(e => e);
+            }
+
             return _errors.ContainsKey(propertyName) ? _errors[propertyName] : Enumerable.Empty<string>();
         }
     }

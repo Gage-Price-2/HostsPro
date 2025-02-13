@@ -16,6 +16,7 @@ namespace HostsPro.DataAccessService
         //private string pathToHosts = "C:\\Users\\Price\\OneDrive - Grand Canyon University\\SeniorYear\\Example-Hosts-file-format.txt";
         //private string testFile = "C:\\Users\\Gage\\OneDrive - Grand Canyon University\\SeniorYear\\TestFile.txt";
         private string testFile = "C:\\Users\\Price\\HostsPro\\TempFile.txt";
+        //private string testFile = "C:\\Windows\\System32\\drivers\\etc\\hosts";
         private List<string> fileLines;
         private const int MaxLineLength = 80;
 

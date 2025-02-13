@@ -21,20 +21,15 @@ namespace HostsPro.ViewModels
         public ICommand SaveCommand { get; set; }
         public ICommand DeleteEntryCommand { get; set; }
         public ICommand AddEntryCommand { get; set; }
-        //private bool _isValidationActive = false;
 
         private readonly FileManager _hostsFileService;
         private readonly IpLookupManager _dnsLookupService;
-        //public bool IsValidationActive
-        //{
-        //    get => _isValidationActive;
-        //    set
-        //    {
-        //        _isValidationActive = value;
-        //        OnPropertyChanged(nameof(IsValidationActive));
-        //    }
-        //}
-
+        private string _statusMessage;
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set { _statusMessage = value; OnPropertyChanged(); }
+        }
         public EntryViewModel()
         {
             _hostsFileService = new FileManager();
@@ -69,6 +64,8 @@ namespace HostsPro.ViewModels
             if (isValid)
             {
                 _hostsFileService.SaveEntries(Entries);
+                //MessageBox.Show("Save successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                StatusMessage = "Save successful!";
             }
             else
             {

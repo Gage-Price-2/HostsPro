@@ -57,13 +57,13 @@ namespace HostsPro.Models
             else
             {
                 IpEntry?.Validate(); // Validate IPEntryModel
-                //if (IpEntry?.HasErrors == true)
-                //{
-                //    foreach (var error in IpEntry.GetErrors(null))
-                //    {
-                //        AddError(nameof(IpEntry), error?.ToString() ?? "Unknown error");
-                //    }
-                //}
+                if (IpEntry?.HasErrors == true)
+                {
+                    foreach (var error in IpEntry.GetErrors(null))
+                    {
+                        AddError(nameof(IpEntry), error?.ToString() ?? "Unknown error");
+                    }
+                }
             }
         }
 
