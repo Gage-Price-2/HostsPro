@@ -10,42 +10,21 @@ namespace HostsPro.BussinessServices
 {
     internal class IpLookupManager
     {
-        //public async Task<string> GetIPAddressAsync(string dnsName)
-        //{
-        //    string output = string.Empty;
-        //    await Task.Run(() =>
-        //    {
-        //        ProcessStartInfo psi = new ProcessStartInfo("nslookup", dnsName)
-        //        {
-        //            RedirectStandardOutput = true,
-        //            UseShellExecute = false,
-        //            CreateNoWindow = true
-        //        };
-
-        //        using (Process process = Process.Start(psi))
-        //        {
-        //            output = process.StandardOutput.ReadToEnd();
-        //        }
-        //    });
-
-        //    // Simple parsing logic to find the IP address in the output
-        //    string[] lines = output.Split('\n');
-        //    foreach (string line in lines)
-        //    {
-        //        if (line.Contains("Address:"))
-        //        {
-        //            return line.Split("Address:")[1].Trim();
-        //        }
-        //    }
-
-        //    return string.Empty;
-        //}
-
+        /// <summary>
+        /// Async method to resolve a locaiton to an IP address 
+        /// </summary>
+        /// <param name="hostname"></param>
+        /// <param name="timeout"></param>
+        /// <returns>string IP address</returns>
         public async Task<string> ResolveDnsWithTimeoutAsync(string hostname, TimeSpan timeout)
         {
+            //CancellationTokenSource is used to end a task
             using var cts = new CancellationTokenSource();
+
+            //get the helper method definition as a variable to be called with a timeout delay
             Task<string> dnsLookupTask = ResolveDnsAsync(hostname);
 
+            //Call helper method with timeout
             Task completedTask = await Task.WhenAny(dnsLookupTask, Task.Delay(timeout, cts.Token));
 
             if (completedTask == dnsLookupTask)
@@ -55,17 +34,24 @@ namespace HostsPro.BussinessServices
                 return await dnsLookupTask;
             }
 
-            // If lookup didn't finish in time, return null (triggers error message)
+            // If lookup didn't finish in time, return null which triggers error message
             return null;
         }
+        /// <summary>
+        /// Helper method to do the actual lookup
+        /// </summary>
+        /// <param name="hostname"></param>
+        /// <returns></returns>
         private async Task<string> ResolveDnsAsync(string hostname)
         {
             try
             {
+                //Built in system method to get IP address
                 var hostEntry = await Dns.GetHostEntryAsync(hostname);
                 foreach (var ip in hostEntry.AddressList)
                 {
-                    if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) // IPv4 Only
+                    //checks if IPv4
+                    if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) 
                     {
                         return ip.ToString();
                     }
@@ -73,7 +59,7 @@ namespace HostsPro.BussinessServices
             }
             catch (Exception)
             {
-                // Lookup failed, return null
+                //Used to catch possible error, returns null after leaves catch
             }
             return null;
         }

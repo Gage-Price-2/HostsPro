@@ -2,6 +2,9 @@
 
 namespace HostsPro.Commands
 {
+    /// <summary>
+    /// Genaric ICommand implementation for view model ICommand variables
+    /// </summary>
     public class RelayCommand : ICommand
     {
         private readonly Action _executeNoParam;
@@ -9,6 +12,7 @@ namespace HostsPro.Commands
         private readonly Predicate<object> _canExecute;
 
         // Constructor for parameterless methods
+        //Called by the SAVE Command
         public RelayCommand(Action execute, Predicate<object> canExecute = null)
         {
             _executeNoParam = execute;
@@ -16,6 +20,7 @@ namespace HostsPro.Commands
         }
 
         // Original constructor for methods with parameters
+        //used by DELETE and ADD Commands
         public RelayCommand(Action<object> execute, Predicate<object> canExecute = null)
         {
             _execute = execute;
@@ -24,6 +29,7 @@ namespace HostsPro.Commands
 
         public bool CanExecute(object parameter) => _canExecute == null || _canExecute(parameter);
 
+        //Genaric Execute method.
         public void Execute(object parameter)
         {
             if (_execute != null)
@@ -32,44 +38,14 @@ namespace HostsPro.Commands
                 _executeNoParam();
         }
 
+        //Genaric CanExecuteChanged method
         public event EventHandler CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
     }
+
+
+
 }
-//using System;
-//using System.Windows.Input;
-
-//namespace HostsPro.Commands
-//{
-//    public class RelayCommand<T> : ICommand
-//    {
-//        private readonly Action<T> _execute;
-//        private readonly Predicate<T> _canExecute;
-
-//        public RelayCommand(Action<T> execute, Predicate<T> canExecute = null)
-//        {
-//            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-//            _canExecute = canExecute;
-//        }
-
-//        public bool CanExecute(object parameter)
-//        {
-//            return _canExecute == null || (parameter is T param && _canExecute(param));
-//        }
-
-//        public void Execute(object parameter)
-//        {
-//            if (parameter is T param)
-//                _execute(param);
-//        }
-
-//        public event EventHandler CanExecuteChanged
-//        {
-//            add { CommandManager.RequerySuggested += value; }
-//            remove { CommandManager.RequerySuggested -= value; }
-//        }
-//    }
-//}

@@ -12,21 +12,29 @@ namespace HostsPro.BussinessServices
 {
     internal class FileManager
     {
+        //Create instance of FileDataAccess
         private FileDataAccess fileDataAccess = new FileDataAccess();
 
-
+        /// <summary>
+        /// Method to get the file contents as HostEntryModel
+        /// </summary>
+        /// <returns>collection of comments and ip entries</returns>
         public List<HostEntryModel> ReadFile()
         {
-            List<HostEntryModel> list = new List<HostEntryModel>();
-            list = fileDataAccess.GetFile();
+            //get model from access layer method
+            var list = fileDataAccess.GetFile();
             return list;
             
 
         }
 
-        public void SaveEntries(ObservableCollection<HostEntryModel> entries)
+        /// <summary>
+        /// Method to take in the collection as model, and return success/fail
+        /// </summary>
+        /// <param name="entries"></param>
+        public bool SaveEntries(ObservableCollection<HostEntryModel> entries)
         {
-            bool success = fileDataAccess.SaveFile(entries.ToList());
+             return fileDataAccess.SaveFile(entries.ToList());
         }
 
         

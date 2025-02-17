@@ -12,22 +12,28 @@ namespace HostsPro.DataAccessService
 {
     public class FileDataAccess
     {
-        //private string pathToHosts = "C:\\Users\\Gage\\OneDrive - Grand Canyon University\\SeniorYear\\Example-Hosts-file-format.txt";
-        //private string pathToHosts = "C:\\Users\\Price\\OneDrive - Grand Canyon University\\SeniorYear\\Example-Hosts-file-format.txt";
-        //private string testFile = "C:\\Users\\Gage\\OneDrive - Grand Canyon University\\SeniorYear\\TestFile.txt";
+        //Path to the file 
         private string testFile = "C:\\Users\\Price\\HostsPro\\TempFile.txt";
+        private string tempFile = Path.GetTempFileName();
+        //private string testFile = "C:\\Users\\Price\\OneDrive - Grand Canyon University\\SeniorYear\\CST-452\\UnitTestFile.txt";
         //private string testFile = "C:\\Windows\\System32\\drivers\\etc\\hosts";
         private List<string> fileLines;
         private const int MaxLineLength = 80;
 
+        //Instantiate a new list of lines in the constructor
         public FileDataAccess()
         {
             fileLines = new List<string>();
         }
 
         #region GET
+        /// <summary>
+        /// Method to read the file and put it into a list of strings
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetAllLines()
         {
+            //Try catch block to catch a file not found exception
             try
             {
                 // Open the text file using a stream reader.
@@ -51,15 +57,21 @@ namespace HostsPro.DataAccessService
             }
             catch (IOException e)
             {
+                //Log the error
                 Console.WriteLine("The file could not be read:");
                 Console.WriteLine(e.Message);
                 return new List<string>();
             }
         }
 
+        /// <summary>
+        /// method to return the list of Entry models back to the view model
+        /// </summary>
+        /// <returns></returns>
         public List<HostEntryModel> GetFile() 
         {
             List<HostEntryModel> entries = new List<HostEntryModel>();
+            //Try catch to catch any errors
             try
             {
                 var lines = File.ReadAllLines(testFile);
@@ -68,6 +80,7 @@ namespace HostsPro.DataAccessService
 
                 foreach (var line in lines)
                 {
+                    //Either start of end of comment block entry
                      if (line.StartsWith("###"))
                     {
                         // End of comment block
@@ -83,8 +96,6 @@ namespace HostsPro.DataAccessService
                             //Set variables
                             currentCommentBlock = string.Empty;
                             isCommentBlock = true;
-                            //string trimmedLine = line.TrimStart('#') + Environment.NewLine;
-                            //currentCommentBlock = trimmedLine;
 
                         }
                     }
@@ -92,7 +103,7 @@ namespace HostsPro.DataAccessService
                     {
                         // Handle comment block contents
                         //IsCommentBlock should be true here
-                        currentCommentBlock += line.TrimStart('#') + Environment.NewLine;
+                        currentCommentBlock += line.TrimStart('#') + Environment.NewLine; 
                         
                     }
                     else if (line.StartsWith("#"))
@@ -126,11 +137,16 @@ namespace HostsPro.DataAccessService
                 // Handle any parsing or file reading exceptions
                 Console.WriteLine($"Error parsing hosts file: {ex.Message}");
             }
-
+            //return the list
             return entries;
         }
 
-
+        /// <summary>
+        /// Method to parse an Ip entry line from the file
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="isActive"></param>
+        /// <returns></returns>
         private IPEntryModel ParseIPEntry(string line, bool isActive)
         {
             if (string.IsNullOrWhiteSpace(line))
@@ -142,6 +158,7 @@ namespace HostsPro.DataAccessService
             // Check for a comment
             string comment = string.Empty;
             int commentIndex = line.IndexOf('#');
+
             if (commentIndex >= 0)
             {
                 comment = line.Substring(commentIndex + 1).Trim();
@@ -151,13 +168,15 @@ namespace HostsPro.DataAccessService
             // Split the remaining part by spaces
             var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            // Check if we have at least IP Address, DNS,
+            // Check if we have at least IP Address, and DNS
             if (parts.Length < 2)
                 return null;
 
             string ipAddress = parts[0];
             string dns = parts[1];
+
             string routesTo = string.Empty;
+            //Split find routesTo and comment part of the line and try to assign those variable with the value
             if (!string.IsNullOrEmpty(comment))
             {
                 var commentParts = comment.Split('+', StringSplitOptions.RemoveEmptyEntries);
@@ -172,6 +191,7 @@ namespace HostsPro.DataAccessService
                     comment = null;
                 }
             }
+            //Return populated model
             return new IPEntryModel
             {
                 IpAddress = ipAddress,
@@ -185,77 +205,143 @@ namespace HostsPro.DataAccessService
         #endregion
 
         #region PUT
+        /// <summary>
+        /// Method to save all entries to the file
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
         public bool SaveFile(List<HostEntryModel> list)
         {
-            using StreamWriter writer = new StreamWriter(testFile);
+            using StreamWriter writer = new StreamWriter(tempFile);
+            bool success = true;
             foreach (var entry in list)
             {
                 if(entry.IsCommentBlock == true)
                 {
-                    //parse comment
-                    WriteCommentBlock(writer, entry.CommentBlock);
+                    //parse comment and write it
+                     success = WriteCommentBlock(writer, entry.CommentBlock);
                 }
                 else
                 {
-                    //parse IP
-                    WriteHostEntry(writer, entry.IpEntry);
+                    //parse IP and write it
+                    success = WriteHostEntry(writer, entry.IpEntry);
+                }
+                if(success == false)
+                {
+                    return false;
                 }
             }
-            return false;
+            //close the writer
+            writer.Close(); 
+
+            //Replate the files
+            File.Replace(tempFile, testFile, null);
+
+            //Delete the temp file
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile); 
+            }
+            return true;
         }
 
-        private static void WriteCommentBlock(StreamWriter writer, string commentBlock)
+        /// <summary>
+        /// Method to write a comment block
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="commentBlock"></param>
+        /// <returns></returns>
+        private static bool WriteCommentBlock(StreamWriter writer, string commentBlock)
         {
-            
+            //Get all lines to write and check if empty
             var lines = commentBlock.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
             if(commentBlock != string.Empty)
             {
-                writer.WriteLine();
-                writer.WriteLine("###");
-                foreach (var line in lines)
+                //Try catch to avoid errors
+                try
                 {
-                    if (!string.IsNullOrWhiteSpace(line))
+                    //Start comment and create padding between entries
+                    writer.WriteLine();
+                    writer.WriteLine("###");
+                    foreach (var line in lines)
                     {
-                        foreach (var wrappedLine in WrapText(line.Trim(), 80)) // Wrap long lines at 80 characters
+                        if (!string.IsNullOrWhiteSpace(line))
                         {
-                            writer.WriteLine("## " + wrappedLine);
+                            // Wrap long lines at 80 characters
+                            foreach (var wrappedLine in WrapText(line.Trim(), 80)) 
+                            {
+                                writer.WriteLine("## " + wrappedLine);
+                            }
                         }
                     }
+                    //Write end of comment identifier
+                    writer.WriteLine("###");
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    return false;
+                }
+            }
+            //Return true if null - wont cause an error
+            return true;
+            
+        }
+
+        /// <summary>
+        /// Method to turn model into string structure and write to the file
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="hostEntry"></param>
+        /// <returns></returns>
+        private static bool WriteHostEntry(StreamWriter writer, IPEntryModel hostEntry)
+        {
+            try
+            {
+                //Create padding
+                writer.WriteLine();
+                string entryPrefix = hostEntry.IsActive ? "" : "# ";
+                string baseEntry = $"{entryPrefix}{hostEntry.IpAddress} {hostEntry.DNS}";
+
+                //Start comment section with routes to
+                string commentSection = $"# {hostEntry.RoutesTo}";
+
+                // Append comment if it exists
+                if (!string.IsNullOrWhiteSpace(hostEntry.Comment))
+                {
+                    commentSection += $" + {hostEntry.Comment}";
                 }
 
-                writer.WriteLine("###");
+                // Write the formatted entry
+                writer.WriteLine($"{baseEntry} {commentSection}");
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
             }
             
         }
 
-        private static void WriteHostEntry(StreamWriter writer, IPEntryModel hostEntry)
-        {
-            writer.WriteLine();
-            string entryPrefix = hostEntry.IsActive ? "" : "# ";
-            string baseEntry = $"{entryPrefix}{hostEntry.IpAddress} {hostEntry.DNS}";
-
-            // RoutesTo is always required
-            string commentSection = $"# {hostEntry.RoutesTo}";
-
-            // Append comment if it exists
-            if (!string.IsNullOrWhiteSpace(hostEntry.Comment))
-            {
-                commentSection += $" + {hostEntry.Comment}";
-            }
-
-            // Write the formatted entry
-            writer.WriteLine($"{baseEntry} {commentSection}");
-        }
-
+        /// <summary>
+        /// Splits a string if it is over the maxLength into multiple lines
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         private static List<string> WrapText(string text, int maxLength)
         {
             List<string> lines = new();
+            //Itterate as many times until it is shorter than max length
             while (text.Length > maxLength)
             {
+                //split at maxlength (80)
                 int splitIndex = text.LastIndexOf(' ', maxLength);
-                if (splitIndex == -1 || splitIndex == 0) splitIndex = maxLength; // Avoid infinite loop
+                if (splitIndex == -1 || splitIndex == 0) splitIndex = maxLength; 
 
+                //Add new line of the text up to the split index
                 lines.Add(text[..splitIndex].Trim());
+                //Reassign the variable to all text after the split index(max length)
                 text = text[(splitIndex + 1)..].Trim();
             }
 
@@ -263,9 +349,10 @@ namespace HostsPro.DataAccessService
             {
                 lines.Add(text);
             }
-
+            //Return new array
             return lines;
         }
+
 
         #endregion
 

@@ -5,6 +5,11 @@ using System.Windows.Data;
 
 namespace HostsPro.Converters
 {
+    //Converters are used int he view to determine what template each entry type will use.
+    //Uses the objects boolean "IsCommentBlock" to determine its display template
+    //Genaric class
+
+
     // Boolean to Visibility Converter
     public class BooleanToVisibilityConverter : IValueConverter
     {
