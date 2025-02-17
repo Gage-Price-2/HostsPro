@@ -21,19 +21,21 @@ namespace HostsPro.Views
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new EntryViewModel();
 
         }
-            private void RoutesTo_LostFocus(object sender, RoutedEventArgs e)
-            {
+        //Lost Focus Event 
+        private void RoutesTo_LostFocus(object sender, RoutedEventArgs e)
+        {
+            //check it is coming from the correct place
             if (DataContext is EntryViewModel vm && sender is TextBox textBox)
             {
                 var entry = textBox.DataContext as HostEntryModel;
                 if (entry != null)
                 {
+                    //Call the view model Method, where is will get the Ip address value and update it's observable value
                     vm.RoutesTo_LostFocus(entry);
                 }
             }
-            }
+        }
     }
 }
