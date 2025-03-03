@@ -68,6 +68,7 @@ namespace HostsPro.Models
             else
             {
                 // Validate IPEntryModel
+                ClearErrors(nameof(IpEntry));
                 IpEntry?.Validate(); 
                 if (IpEntry?.HasErrors == true)
                 {

@@ -13,9 +13,9 @@ namespace HostsPro.DataAccessService
     public class FileDataAccess
     {
         //Path to the file 
-        private string testFile = "C:\\Users\\Price\\HostsPro\\TempFile.txt";
+        //private string testFile = "C:\\Users\\Price\\HostsPro\\TempFile.txt";
         private string tempFile = Path.GetTempFileName();
-        //private string testFile = "C:\\Users\\Price\\OneDrive - Grand Canyon University\\SeniorYear\\CST-452\\UnitTestFile.txt";
+        private string testFile = "C:\\Users\\Price\\OneDrive - Grand Canyon University\\SeniorYear\\CST-452\\UnitTestFile.txt";
         //private string testFile = "C:\\Windows\\System32\\drivers\\etc\\hosts";
         private List<string> fileLines;
         private const int MaxLineLength = 80;
@@ -235,8 +235,14 @@ namespace HostsPro.DataAccessService
             writer.Close(); 
 
             //Replate the files
-            File.Replace(tempFile, testFile, null);
+            try
+            {
+                File.Replace(tempFile, testFile, null);
 
+            }catch(Exception ex)
+            {
+                return false;
+            }
             //Delete the temp file
             if (File.Exists(tempFile))
             {
